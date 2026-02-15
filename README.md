@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="app/static/logos/nti-logo.png" height="100"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="app/static/logos/ivolve-logo.png" height="100"/>
+</p>
+
 # CloudDevOpsProject
 
 This repository demonstrates a Cloud DevOps workflow including containerization, Kubernetes orchestration, infrastructure provisioning using Terraform (locally with Minikube), Configuration Management with Ansible, Continuous Integration with Jenkins and Continuous Deployment with ArgoCD.
@@ -133,4 +139,113 @@ kubectl get svc -n ivolve
 
 ---
 
+## 3. Infrastructure Provisioning with Terraform (Minikube)
+
+Note: Original task required AWS infrastructure provisioning (VPC, EC2, S3 Backend, CloudWatch).
+Since AWS account was not available, Terraform was implemented locally using Kubernetes provider with Minikube while maintaining:
+> Modular structure
+> Infrastructure as Code principles
+> Reusable Terraform modules
+
+#### Objectives:
+
+> Create Kubernetes Namespace (ivolve)
+> Create Deployment for Flask Application
+> Create NodePort Service
+> Use Terraform Modules (Network & Server)
+
+#### Prepare the toolbox
+
+Initializes Terraform project folder
+Downloads the provider plugins needed (e.g., Kubernetes provider for Minikube).
+Prepares Terraform to understand configuration and modules.
+
+```bash
+terraform init
+```
+
+#### Check what is about to build
+
+Shows a preview of what Terraform will do if eun apply
+Checks configuration against the current state of infrastructure.
+Catch mistakes before making changes.
+
+```bash
+terraform plan
+```
+
+#### Applies the changes to infrastructure.
+
+Creates resources in Minikube (namespace, deployment, service).
+Uses the Terraform state to track what exists so next time it can manage updates.
+
+```bash
+terraform apply
+```
+
+![terraforminit](/Screenshots/terraforminit.png)
+![terraformplan](/Screenshots/terraformplan.png)
+![terraformapply](/Screenshots/terraformapply.png)
+![terraformvalid](/Screenshots/terraforminit.png)
+
+
+```bash
+terraform output
+```
+
+![terraformoutput](/Screenshots/terraformoutput.png)
+
+---
+
+## 4. Configuration Management with Ansible
+
+Ansible is used to configure the local Minikube/Ubuntu environment automatically instead of AWS EC2.
+
+#### Objectives
+
+ - Install required packages
+ - Install Jenkins
+ - Use Ansible Roles
+ - Use Static Inventory (Local VM instead of AWS Dynamic Inventory)
+
+
+##### Run Playbook 
+
+```bash
+ansible-playbook playbook.yaml
+```
+
+![playbookansible](/Screenshots/playbookansible.png)
+
+
+#### Verification
+
+Docker Version
+
+```bash
+docker --version
+```
+
+![dockeransible](/Screenshots/dockeransible.png)
+
+Java Version
+
+```bash
+java --version
+```
+
+![javaansible](/Screenshots/javaansible.png)
+
+Jenkins Service Status
+
+```bash
+sudo systemctl status jenkins
+```
+
+![Jenkinstatus](/Screenshots/Jenkinstatus.png)
+![Jenkinsansible](/Screenshots/Jenkinsansible.png)
+
+> Note: AWS EC2 was not available in this environment.
+> Therefore, Ansible was implemented on a local Ubuntu VM
+> with static inventory while maintaining role-based structure.
 

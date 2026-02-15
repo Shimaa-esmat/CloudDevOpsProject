@@ -1,0 +1,10 @@
+- name: Install Git
+  apt:
+    name: git
+    state: present
+    update_cache: yes
+
+- name: Install Java
+  apt:
+    name: openjdk-17-jdk
+    state: present
