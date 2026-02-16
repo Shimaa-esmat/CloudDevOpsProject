@@ -6,14 +6,14 @@ pipeline {
     environment {
         DOCKER_IMAGE = "shimaaesmat/gp-ivolve:latest"
         NAMESPACE = "ivolve"
-        DEPLOYMENT = "gp-deployment"
     }
 
     stages {
+
         stage('Build Image') {
             steps {
                 script {
-                    docker.build(DOCKER_IMAGE)
+                    buildImage(DOCKER_IMAGE)
                 }
             }
         }
@@ -21,7 +21,7 @@ pipeline {
         stage('Scan Image') {
             steps {
                 script {
-                    sh "trivy image ${DOCKER_IMAGE}"
+                    scanImage(DOCKER_IMAGE)
                 }
             }
         }
@@ -29,9 +29,7 @@ pipeline {
         stage('Push Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                        docker.image(DOCKER_IMAGE).push()
-                    }
+                    pushImage(DOCKER_IMAGE)
                 }
             }
         }
@@ -39,7 +37,7 @@ pipeline {
         stage('Delete Local Image') {
             steps {
                 script {
-                    sh "docker rmi ${DOCKER_IMAGE}"
+                    deleteImage(DOCKER_IMAGE)
                 }
             }
         }
@@ -47,17 +45,18 @@ pipeline {
         stage('Update Manifests') {
             steps {
                 script {
-                    sh "sed -i 's|image: .*|image: ${DOCKER_IMAGE}|' k8s/deployment.yaml"
+                    updateManifest(DOCKER_IMAGE)
                 }
             }
         }
 
-        stage('Push Manifests') {
+        stage('Deploy to K8s') {
             steps {
                 script {
-                    sh "kubectl apply -f k8s/ --namespace=${NAMESPACE}"
+                    deployK8s(NAMESPACE)
                 }
             }
         }
     }
 }
+

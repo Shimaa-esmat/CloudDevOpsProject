@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
       - name: flask
-        image: gp-ivolve
-        imagePullPolicy: IfNotPresent
+        image: shimaaesmat/gp-ivolve:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
+
