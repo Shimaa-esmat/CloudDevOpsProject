@@ -186,7 +186,7 @@ terraform apply
 ![terraforminit](/Screenshots/terraforminit.png)
 ![terraformplan](/Screenshots/terraformplan.png)
 ![terraformapply](/Screenshots/terraformapply.png)
-![terraformvalid](/Screenshots/terraforminit.png)
+![terraformvalid](/Screenshots/terraformvalid.png)
 
 
 ```bash
