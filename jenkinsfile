@@ -12,49 +12,37 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                script {
-                    buildImage(DOCKER_IMAGE)
-                }
+                script { buildImage(DOCKER_IMAGE) }
             }
         }
 
         stage('Scan Image') {
             steps {
-                script {
-                    scanImage(DOCKER_IMAGE)
-                }
+                script { scanImage(DOCKER_IMAGE) }
             }
         }
 
         stage('Push Image') {
             steps {
-                script {
-                    pushImage(DOCKER_IMAGE)
-                }
+                script { pushImage(DOCKER_IMAGE) }
             }
         }
 
         stage('Delete Local Image') {
             steps {
-                script {
-                    deleteImage(DOCKER_IMAGE)
-                }
+                script { deleteImage(DOCKER_IMAGE) }
             }
         }
 
         stage('Update Manifests') {
             steps {
-                script {
-                    updateManifest(DOCKER_IMAGE)
-                }
+                script { updateManifest(DOCKER_IMAGE) }
             }
         }
 
         stage('Deploy to K8s') {
             steps {
-                script {
-                    deployK8s(NAMESPACE)
-                }
+                script { deployK8s(NAMESPACE) }
             }
         }
     }
