@@ -144,14 +144,19 @@ kubectl get svc -n ivolve
 Note: Original task required AWS infrastructure provisioning (VPC, EC2, S3 Backend, CloudWatch).
 Since AWS account was not available, Terraform was implemented locally using Kubernetes provider with Minikube while maintaining:
 > Modular structure
+
 > Infrastructure as Code principles
+
 > Reusable Terraform modules
 
 #### Objectives:
 
 > Create Kubernetes Namespace (ivolve)
+
 > Create Deployment for Flask Application
+
 > Create NodePort Service
+
 > Use Terraform Modules (Network & Server)
 
 #### Prepare the toolbox
@@ -186,7 +191,7 @@ terraform apply
 ![terraforminit](/Screenshots/terraforminit.png)
 ![terraformplan](/Screenshots/terraformplan.png)
 ![terraformapply](/Screenshots/terraformapply.png)
-![terraformvalid](/Screenshots/terraformvalid.png)
+![terraformvalid](/Screenshots/terraforminit.png)
 
 
 ```bash
@@ -200,8 +205,6 @@ terraform output
 ## 4. Configuration Management with Ansible
 
 Ansible is used to configure the local Minikube/Ubuntu environment automatically instead of AWS EC2.
-
-#### Objectives
 
  - Install required packages
  - Install Jenkins
@@ -249,3 +252,89 @@ sudo systemctl status jenkins
 > Therefore, Ansible was implemented on a local Ubuntu VM
 > with static inventory while maintaining role-based structure.
 
+---
+
+## 5. Continuous Integration with Jenkins
+
+This step sets up a Jenkins pipeline to automate building, scanning, and pushing the Docker image, updating Kubernetes manifests, and deploying to the Minikube cluster.
+
+- Build the Docker image.
+- Scan the Docker image.
+- Push the image to Docker Hub.
+- Delete the local image to save space.
+- Update Kubernetes manifests.
+- Apply the manifests to the Minikube cluster.
+- Use a Jenkins Shared Library for reusable pipeline steps.
+
+##### Jenkins Pipeline
+
+```Jenkinsfile
+@Library('shared-library') _
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "shimaaesmat/gp-ivolve:latest"
+        NAMESPACE = "ivolve"
+    }
+
+    stages {
+
+        stage('Build Image') {
+            steps {
+                script { buildImage(DOCKER_IMAGE) }
+            }
+        }
+
+        stage('Scan Image') {
+            steps {
+                script { scanImage(DOCKER_IMAGE) }
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                script { pushImage(DOCKER_IMAGE) }
+            }
+        }
+
+        stage('Delete Local Image') {
+            steps {
+                script { deleteImage(DOCKER_IMAGE) }
+            }
+        }
+
+        stage('Update Manifests') {
+            steps {
+                script { updateManifest(DOCKER_IMAGE) }
+            }
+        }
+
+        stage('Deploy to K8s') {
+            steps {
+                script { deployK8s(NAMESPACE) }
+            }
+        }
+    }
+}
+```
+
+##### Shared Library Structure
+
+The vars/ directory contains reusable pipeline functions
+shared-library/
+└── vars/
+    ├── buildImage.groovy
+    ├── scanImage.groovy
+    ├── pushImage.groovy
+    └── deployK8s.groovy
+
+Each .groovy file contains a function that can be called in the pipeline to keep your Jenkinsfile clean and maintainable
+
+###### CI/CD Workflow Diagram
+
+Developer Push → Jenkins Pipeline → Docker Build → Trivy Scan → DockerHub → Update K8s Manifests → Deploy to Minikube
+
+![scan image](/Screenshots/scanimage.png)
+![CI/CD Workflow](/Screenshots/CICDWorkflow.png)
