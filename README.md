@@ -8,6 +8,64 @@
 
 This repository demonstrates a Cloud DevOps workflow including containerization, Kubernetes orchestration, infrastructure provisioning using Terraform (locally with Minikube), Configuration Management with Ansible, Continuous Integration with Jenkins and Continuous Deployment with ArgoCD.
 
+```markdown
+CloudDevOpsProject
+├── ansible
+│   ├── ansible.cfg
+│   ├── inventory.ini
+│   ├── playbook.yaml
+│   └── roles
+│       ├── common
+│       ├── docker
+│       └── jenkins
+├── app
+│   ├── app.py
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── static
+│   │   ├── logos
+│   │   │   ├── ivolve-logo.png
+│   │   │   └── nti-logo.png
+│   │   └── style.css
+│   └── templates
+│       ├── app.py
+│       ├── index.html
+│       ├── README.md
+│       ├── requirements.txt
+│       └── static
+│           ├── logos
+│           │   ├── ivolve-logo.png
+│           │   └── nti-logo.png
+│           └── style.css
+├── argocd
+│   └── application.yaml
+├── jenkinsfile
+├── k8s
+│   ├── deployment.yaml
+│   ├── namespace.yaml
+│   └── service.yaml
+├── terraform
+│   ├── main.tf
+│   ├── modules
+│   │   ├── network
+│   │   │   └── namespace.tf
+│   │   └── server
+│   │       ├── deployment_service.tf
+│   │       └── variables.tf
+│   ├── outputs.tf
+│   ├── terraform.tfstate
+│   ├── tfplan
+│   └── variables.tf
+├── trivy_0.69.1_Linux-64bit.deb
+└── vars
+    ├── buildImage.groovy
+    ├── deleteImage.groovy
+    ├── deployK8s.groovy
+    ├── pushImage.groovy
+    ├── scanImage.groovy
+    └── updateManifest.groovy
+```
+
 ---
 
 ## . Containerization with Docker
@@ -249,9 +307,7 @@ sudo systemctl status jenkins
 ![Jenkinsansible](/Screenshots/Jenkinsansible.png)
 
 > Note: AWS EC2 was not available in this environment.
-
 > Therefore, Ansible was implemented on a local Ubuntu VM
-
 > with static inventory while maintaining role-based structure.
 
 ---
@@ -268,7 +324,7 @@ This step sets up a Jenkins pipeline to automate building, scanning, and pushing
 - Apply the manifests to the Minikube cluster.
 - Use a Jenkins Shared Library for reusable pipeline steps.
 
-#### Jenkins Pipeline
+##### Jenkins Pipeline
 
 ```Jenkinsfile
 @Library('shared-library') _
@@ -322,24 +378,73 @@ pipeline {
 }
 ```
 
-#### Shared Library Structure
+##### Shared Library Structure
 
 The vars/ directory contains reusable pipeline functions
-
-```markdown
 shared-library/
 └── vars/
     ├── buildImage.groovy
     ├── scanImage.groovy
     ├── pushImage.groovy
     └── deployK8s.groovy
-```
 
 Each .groovy file contains a function that can be called in the pipeline to keep your Jenkinsfile clean and maintainable
 
-#### CI/CD Workflow Diagram
+###### CI/CD Workflow Diagram
 
 Developer Push → Jenkins Pipeline → Docker Build → Trivy Scan → DockerHub → Update K8s Manifests → Deploy to Minikube
 
 ![scan image](/Screenshots/scanimage.png)
 ![CI/CD Workflow](/Screenshots/CICDWorkflow.png)
+
+---
+
+## 6. Continuous Deployment with Argo CD
+
+To implement GitOps-based Continuous Deployment, ArgoCD was configured to automatically synchronize and deploy the application into the Kubernetes cluster.
+
+> Since AWS was not available, ArgoCD was installed and configured on the local Minikube cluster while maintaining GitOps best practices.
+
+####  ArgoCD Application Configuration
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gp-ivolve-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Shimaa-esmat/CloudDevOpsProject.git
+    targetRevision: HEAD
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ivolve
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+```
+
+#### GitOps Workflow
+
+```markdown
+Code Push
+   ↓
+Jenkins CI Pipeline
+   ↓
+Manifest Update in Git
+   ↓
+ArgoCD Auto Sync
+   ↓
+Minikube Cluster Updated
+```
+
+![ardocd](/Screenshots/ardocd.png)
+![ardocd1](/Screenshots/ardocd1.png)
+
+
+
+
