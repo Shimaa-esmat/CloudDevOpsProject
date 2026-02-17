@@ -249,7 +249,9 @@ sudo systemctl status jenkins
 ![Jenkinsansible](/Screenshots/Jenkinsansible.png)
 
 > Note: AWS EC2 was not available in this environment.
+
 > Therefore, Ansible was implemented on a local Ubuntu VM
+
 > with static inventory while maintaining role-based structure.
 
 ---
@@ -266,7 +268,7 @@ This step sets up a Jenkins pipeline to automate building, scanning, and pushing
 - Apply the manifests to the Minikube cluster.
 - Use a Jenkins Shared Library for reusable pipeline steps.
 
-##### Jenkins Pipeline
+#### Jenkins Pipeline
 
 ```Jenkinsfile
 @Library('shared-library') _
@@ -320,19 +322,22 @@ pipeline {
 }
 ```
 
-##### Shared Library Structure
+#### Shared Library Structure
 
 The vars/ directory contains reusable pipeline functions
+
+```markdown
 shared-library/
 └── vars/
     ├── buildImage.groovy
     ├── scanImage.groovy
     ├── pushImage.groovy
     └── deployK8s.groovy
+```
 
 Each .groovy file contains a function that can be called in the pipeline to keep your Jenkinsfile clean and maintainable
 
-###### CI/CD Workflow Diagram
+#### CI/CD Workflow Diagram
 
 Developer Push → Jenkins Pipeline → Docker Build → Trivy Scan → DockerHub → Update K8s Manifests → Deploy to Minikube
 
